@@ -1,7 +1,5 @@
 :- dynamic(counter/1).
 
-:-include('AniBot.pl').
-%%:-[AniBot].
 
 :- dynamic generoAnime/2.
 generoAnime("Hagane no renkinjutsushi",["Accion", "Aventura"]).
@@ -17,7 +15,7 @@ generoAnime("Psycho-Pass",["Accion","Crimen"]).
 
 :- dynamic rating/2.
 rating("Hagane no renkinjutsushi",5).
-rating("Clannad: After Story",4).
+rating("Clannad: After Story",5).
 rating("Monster",4).
 rating("Shingeki no kyojin",5).
 rating("Kiseijû: Sei no kakuritsu",2).
@@ -29,7 +27,7 @@ rating("Psycho-Pass",4).
 
 
 :- dynamic popularidad/2.
-popularidad("Hagane no renkinjutsushi",9).
+popularidad("Hagane no renkinjutsushi",3).
 popularidad("Clannad: After Story",5).
 popularidad("Monster",6).
 popularidad("Shingeki no kyojin",8).
@@ -53,8 +51,6 @@ preguntado("Death Note: Desu nôto",0).
 preguntado("Nana",0).
 preguntado("Psycho-Pass",0).
 
-/*********************************************/
-/*iMPORTANDO EL ARCHIVO AniBot.pl*/
 
 
 /***********************************************************************************/
@@ -62,7 +58,7 @@ preguntado("Psycho-Pass",0).
 /*Regla que permite al usuario escribir en la linea de comandos y luego la lee*/
 in:-
     nl,
-    write(">"),
+    write('>'),
     readLine(Text).
 
 /*Funcion que lee lo escrito por el usuario en el comando y elimina mayusculas*/
@@ -102,10 +98,7 @@ buscarGenero([X|Z],Genero):-
 
 buscarRating([X,W|_],X):-
     convert(W,Y),
-    (Y=="Estrellas";Y=="Estrella"),
-    write('EL RATING ES'),    
-    write(X),
-    nl.
+    (Y=="Estrellas";Y=="Estrella").
 buscarRating([X|Z],_):-
     buscarRating(Z,_).     
 
@@ -160,7 +153,7 @@ reportarAnime(Anime):-
 /* Agrega la lista de generos de un nuevo anime que el usuario este ingresando*/
 agregarGenero([X|Z],Lista,Anime):-
     convert(X,String),
-    String==",",
+    (String==",";String=="Y"),
     agregarGenero(Z,Lista,Anime).
 agregarGenero([X|Z],Lista,Anime):-
     convert(X,String),
@@ -179,24 +172,30 @@ agregarRating([X],Anime):-
 agregarRating(_,Anime):-
     write('Lo siento,el rating ingresado debe ser un numero entero entre 1 y 5.'),in.
 
+agregarPopularidad([X],Anime):-
+    integer(X),
+    between(1,10,X),
+    assert(popularidad(Anime,X)).
+agregarPopularidad(_,Anime):-
+    assert(popularidad(Anime,1)).
+
 
 /* Agregar nuevo anime ingresado por el usuario a la base de datos */ 
 agregarNuevoAnime(Anime):-
-    write('No lo conozco, pero me gustaria saber mas, me podrias indicar sobre el por favor?'),nl,
-    write('Cual es su genero(s)? :'),readGenero(Texta),agregarGenero(Texta,[],Anime),nl,
-    write('Cual es su rating o numero de estrellas ? :'),readRating(Texto), agregarRating(Texto,Anime),
-    assert(popularidad(Anime,1)),
+    write('No lo conozco, pero me gustaria saber mas.'),nl,
+    write('Cuales son sus generos ?: '),nl,readGenero(Texta),agregarGenero(Texta,[],Anime),nl,
+    write('Cual es su rating o numero de estrellas ?: '),nl,readRating(Texto), agregarRating(Texto,Anime),nl,
+    write('Del 1 al 10, puedes decir que tan popular es?: '),nl,readRating(Texte),agregarPopularidad(Texte,Anime),
     assert(preguntado(Anime,1)),
     write('Ya lo tengo anotado, muchas gracias!.'),in.
 
-                                    /*OJOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO BORRAR AQUI LO QUE IMPRIME*/
+                                    
 buscarPopularidad(Lista,Popularidad):-
-    (buscarPalabra('muy',Lista,RestoLista),buscarPalabra('poco',RestoLista,_),write('muy poco conocido'),Popularidad=a);
-    (buscarPalabra('poco',Lista,RestoLista),write('poco conocido'),Popularidad=b);
-    (buscarPalabra('muy',Lista,RestoLista),(buscarPalabra('conocido',RestoLista,_);buscarPalabra('conocidos',RestoLista,_))
-        ,write('muy conocido'),Popularidad=d);
-    (buscarPalabra('bastante',Lista,RestoLista),write('bastante conocido'),Popularidad=e);
-    ((buscarPalabra('conocido',Lista,RestoLista);buscarPalabra('conocidos',Lista,RestoLista)),write('conocido'),Popularidad=c). 
+    (buscarPalabra('muy',Lista,RestoLista),buscarPalabra('poco',RestoLista,_),Popularidad=a);
+    (buscarPalabra('poco',Lista,RestoLista),Popularidad=b);
+    (buscarPalabra('muy',Lista,RestoLista),(buscarPalabra('conocido',RestoLista,_);buscarPalabra('conocidos',RestoLista,_)),Popularidad=d);
+    (buscarPalabra('bastante',Lista,RestoLista),Popularidad=e);
+    ((buscarPalabra('conocido',Lista,RestoLista);buscarPalabra('conocidos',Lista,RestoLista)),Popularidad=c). 
 
 /* Busca cual es el rating mas alto, actualmente en la base de datos que posee un anime */
 buscarMaximoRating(Maximo):-
@@ -428,17 +427,18 @@ respuesta(5,Popularidad,Genero):-
         write('Estos son los animes(s) bastante conocido(s) que tengo: '),write(Z),in).  
 
 respuesta(6,Popularidad,Maximo):-
-    ((Popularidad==a),findall(B,(popularidad(B,X),rating(B,Maximo),between(1,2,X)),Z),
+    ((Popularidad==a),findall(B,(popularidad(B,X),rating(B,Maximo),between(1,2,X)),Z),length(Z,L),L>0,
         write('Te pueden interesar los siguientes animes: '),imprimirLista(Z),in);
-    ((Popularidad==b),findall(B,(popularidad(B,X),rating(B,Maximo),between(3,5,X)),Z),
+    ((Popularidad==b),findall(B,(popularidad(B,X),rating(B,Maximo),between(3,5,X)),Z),length(Z,L),L>0,
         write('Te pueden interesar los siguientes animes: '),imprimirLista(Z),in);
-    ((Popularidad==c),findall(B,(popularidad(B,X),rating(B,Maximo),between(6,7,X)),Z),
+    ((Popularidad==c),findall(B,(popularidad(B,X),rating(B,Maximo),between(6,7,X)),Z),length(Z,L),L>0,
         write('Te pueden interesar los siguientes animes: '),imprimirLista(Z),in);
-    ((Popularidad==d),findall(B,(popularidad(B,X),rating(B,Maximo),between(8,9,X)),Z),
+    ((Popularidad==d),findall(B,(popularidad(B,X),rating(B,Maximo),between(8,9,X)),Z),length(Z,L),L>0,
         write('Te pueden interesar los siguientes animes: '),imprimirLista(Z),in);
-    ((Popularidad==e),findall(B,(popularidad(B,X),rating(B,Maximo),between(10,10,X)),Z),
-        write('Te pueden interesar los siguientes animes: '),imprimirLista(Z),in),
-    write(Maximo).
+    ((Popularidad==e),findall(B,(popularidad(B,X),rating(B,Maximo),between(10,10,X)),Z),length(Z,L),L>0,
+        write('Te pueden interesar los siguientes animes: '),imprimirLista(Z),in).
+respuesta(6,Popularidad,Maximo):-
+    write('Disculpa,no tengo ningun anime con esas caracteristicas para mostrarte'),in.    
 
 respuesta(7,Genero,_):-
     write(' Creo que te pueden interesar los siguientes animes: '),
@@ -484,6 +484,6 @@ respuesta(9,Genero,_):-
     in.
 
 /*****************************************************************************/
-programa:-
+aniBot:-
     write("AniBot welcomes you!"),
     in.
