@@ -231,6 +231,12 @@ agregarRating([X],Anime):-
 agregarRating(_,Anime):-
     write('Lo siento,el rating ingresado debe ser un numero entero entre 1 y 5.'),in.
 
+
+%! agregarPopularidad(Lista, Anime)
+%  Agrega el predicado que indica la popularidad del anime nuevo que esta agregando el usuario
+%   @param Lista    Lista de palabras ingresadas por el usuario convertidas en atomos 
+%   @param Anime    Anime a agregarle la popularidad
+
 agregarPopularidad([X],Anime):-
     integer(X),
     between(1,10,X),
