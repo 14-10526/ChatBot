@@ -55,39 +55,71 @@ preguntado("Psycho-Pass",0).
 
 /***********************************************************************************/
 
-/*Regla que permite al usuario escribir en la linea de comandos y luego la lee*/
+%! in
+% Regla que permite al usuario escribir en la linea de comandos y luego la lee
+%   @param None
+
 in:-
     nl,
     write('>'),
     readLine(Text).
 
-/*Funcion que lee lo escrito por el usuario en el comando y elimina mayusculas*/
+%! readLine(Text)
+%  Regla que lee lo escrito por el usuario en el comando y elimina mayusculas
+%   @param Text Texto escrito por el usuario
+
 readLine(Text):-
     readln(Text,_,_,_,lowercase),
     findRespuesta(Text).
 
-/*lee los generos ingresados por el usuario de un nuevo anime*/
+%! readGenero(Text)
+%  Lee los generos ingresados por el usuario de un nuevo anime
+%   @param Genero de un nuevo anime 
+
 readGenero(Text):-
     readln(Text,_,_,_,lowercase).
 readGenero(_):-
     write('Escribe al menos un genero por favor :( .'),in.
-/*lee el rating ingresado por el usuario de un nuevo anime*/
+
+%! readRating(Text)
+%  Lee el rating de un nuevo anime ingresado por el usuario
+%   @param Text Rating del nuevo anime
+
 readRating(Text):-
     readln(Text,_,_,_,lowercase).
             
 /***********************************************************************/
-/*Funcion que ubica una palabra en la frase que ingresa el usuario*/
+
+
+%! buscarPalabra(X,Y,Z)
+%  Regla que ubica una palabra en la frase que ingresa el usuario
+%   @param          Palabra La palabra a buscar
+%   @param Lista1   Lista en donde se busca la palabra
+%   @param lista2   Lista que queda luego de encontrar la palabra
+
 buscarPalabra(X,[X|T],T).
 buscarPalabra(X,[Y|T],L):- 
     buscarPalabra(X,T,L).
 
-/*Esta funcion convierte la palabra que se ingrese a mayuscula la primera letra*/
-/* para que pueda hacer matching con los facts*/
+
+
+%! convert(Atomo,String)
+%  Regla que convierte la palabra que se ingrese a mayuscula la primera letra
+%  para que pueda hacer matching con los facts
+%   @param Atomo    Atomo a convertir
+%   @param String   String al que se convierte el atomo
+
 convert(Atomo,String):-
     atom_chars(Atomo,[X|Z]),
     upcase_atom(X,Upper),
     append([Upper],Z,Lista),
     string_chars(String,Lista).
+
+
+%! buscarGenero(Lista, Genero)
+%  Regla que toma lo escrito por el usuario y busca el genero en la frase
+%   @param Lista    Frase escrita por el usuario
+%   @param Genero   Nombre del genero
 
 buscarGenero([X,W|Z],Genero):-
     convert(X,Y),
@@ -96,11 +128,21 @@ buscarGenero([X,W|Z],Genero):-
 buscarGenero([X|Z],Genero):-
     buscarGenero(Z,Genero).    
 
+
+%! buscarRating(Lista, Rating)
+%  Regla que toma lo escrito por el usuario y busca el numero de rating en la frase
+%   @param Lista    Frase escrita por el usuario
+%   @param Rating   Numero de rating
+
 buscarRating([X,W|_],X):-
     convert(W,Y),
     (Y=="Estrellas";Y=="Estrella").
 buscarRating([X|Z],_):-
     buscarRating(Z,_).     
+
+%! imprimirPopularidad(Anime)
+%  Regla que imprime la popularidad de un anime 
+%   @param Anime    Anime al que se imprime su popularidad segun una escala definida
 
 imprimirPopularidad(Anime):-
     popularidad(Anime,Popular),
@@ -117,7 +159,11 @@ imprimirGenero([X|Z]):-
 imprimirGenero([]).    
 
 
-/* ESTAS REGLAS PERMITEN QUE SI SE PREGUNTA POR UN MISMO ANIME MAS DE 5 VECES, SE AUMENTE LA POPULARIDAD DEL MISMO*/    
+%! subirConteo(Anime)
+%  Reglas que permiten que si se pregunta por un anime mas de 5 veces,
+%  se aumente la popularidad del mismo
+%   @param Anime    Anime por el que se pregunta
+   
 subirConteo(Anime):-
     preguntado(Anime,Numero),
     Numero=4,
@@ -140,7 +186,10 @@ subirPopularidad(Anime):-
     between(10,10,Numero).    
 
 
-/* Reporta un anime que ya existe en la base de datos*/    
+%! reportarAnime(Anime)
+%  Regla que reporta un anime que ya existe en la base de datos
+%  @param Anime    Anime a verificar
+
 reportarAnime(Anime):-
     subirConteo(Anime),
     write('Si lo conozco! '),
@@ -150,7 +199,12 @@ reportarAnime(Anime):-
     write(' estrella(s)'),write(' es de genero '),imprimirGenero(Genero),write(' y es'),imprimirPopularidad(Anime),
     in. 
 
-/* Agrega la lista de generos de un nuevo anime que el usuario este ingresando*/
+%! agregarGenero(Lista1, Lista2, Anime)
+%  Regla que agrega la lista de generos de un nuevo anime que el usuario este ingresando
+%   @param Lista1   Lista de (atomos) palabras que el usuario ingreso por la linea de comandos
+%   @param Lista2   Lista de generos convertidos a String
+%   @param Anime    Anime a agregarle la lista de generos
+
 agregarGenero([X|Z],Lista,Anime):-
     convert(X,String),
     (String==",";String=="Y"),
@@ -164,7 +218,12 @@ agregarGenero([X],Lista,Anime):-
     append(Lista,[String],Listica),
     assert(generoAnime(Anime,Listica)).
 
-/* Agrega el predicado que indica el rating del anime nuevo que esta agregando el usuario*/
+
+%! agregarRating(Lista, Anime)
+%  Agrega el predicado que indica el rating del anime nuevo que esta agregando el usuario
+%   @param Lista    Lista de palabras ingresadas por el usuario convertidas en atomos 
+%   @param Anime    Anime a agregarle el rating
+
 agregarRating([X],Anime):-
     integer(X),
     between(1,5,X),
@@ -180,7 +239,11 @@ agregarPopularidad(_,Anime):-
     assert(popularidad(Anime,1)).
 
 
-/* Agregar nuevo anime ingresado por el usuario a la base de datos */ 
+
+%! agregarNuevoAnime(Anime)
+%  Agrega un nuevo anime ingresado por el usuario a la base de datos  
+%   @param Anime    Anime a agregar a la base de datos
+
 agregarNuevoAnime(Anime):-
     write('No lo conozco, pero me gustaria saber mas.'),nl,
     write('Cuales son sus generos ?: '),nl,readGenero(Texta),agregarGenero(Texta,[],Anime),nl,
@@ -190,6 +253,14 @@ agregarNuevoAnime(Anime):-
     write('Ya lo tengo anotado, muchas gracias!.'),in.
 
                                     
+
+
+%! buscarPopularidad(Lista, Popularidad)
+%  Matchea las frases ingresadas con el usuario con los animes que correspondan a esa popularidad
+%   @param Lista        Lista de palabras ingresadas por el usuario convertidas en atomos
+%   @param Popularidad  Indicador del rango de popuaridad
+
+>>>>>>> rama-documentacion
 buscarPopularidad(Lista,Popularidad):-
     (buscarPalabra('muy',Lista,RestoLista),buscarPalabra('poco',RestoLista,_),Popularidad=a);
     (buscarPalabra('poco',Lista,RestoLista),Popularidad=b);
@@ -197,7 +268,11 @@ buscarPopularidad(Lista,Popularidad):-
     (buscarPalabra('bastante',Lista,RestoLista),Popularidad=e);
     ((buscarPalabra('conocido',Lista,RestoLista);buscarPalabra('conocidos',Lista,RestoLista)),Popularidad=c). 
 
-/* Busca cual es el rating mas alto, actualmente en la base de datos que posee un anime */
+
+%! buscarMaximoRating(Maximo)
+%  Busca cual es el rating mas alto, actualmente en la base de datos que posee un anime
+%   @param Maximo   Maximo rating      
+
 buscarMaximoRating(Maximo):-
     (rating(_,5),Maximo=5);
     (rating(_,4),Maximo=4);
@@ -205,7 +280,11 @@ buscarMaximoRating(Maximo):-
     (rating(_,2),Maximo=2);
     (rating(_,1),Maximo=1).
 
-/*Funcion que imprime cada anime de la lista que recibe con sus atributos*/
+
+%! imprimirLista(Lista)
+%  Imprime cada anime de la lista que recibe con sus atributos
+%   @param Lista    Lista de animes a imprimir
+
 imprimirLista([X|Z]):-
     nl,
     popularidad(X,Popularidad),
@@ -217,7 +296,11 @@ imprimirLista([X|Z]):-
 imprimirLista([X|_]).
 imprimirLista([]).   
 
-/*regla que imprime elemento de la lista si su suma es igual al maximo.*/
+%! imprimirMaximo(Lista,Maximo)
+%  Regla que imprime elemento de la lista si su suma es igual al maximo
+%   @param Lista    Lista de animes
+%   @param Maximo   Numero qu representa el maximo
+
 imprimirMaximo([X|Z],Maximo):-
     nl,
     sumaAnime(X,Maximo),
@@ -229,7 +312,12 @@ imprimirMaximo([X|Z],Maximo):-
     imprimirMaximo(Z,Maximo).
 imprimirMaximo([],Maximo).    
 
-/* Regla que halla la suma maxima entre rating+popularidad de cada anime*/
+
+%! hallarMaximo(Lista,ListaAnima)
+%  Regla que halla la suma maxima entre rating+popularidad de cada anime
+%   @param Lista        Lista del resultado de rating+popularidad de cada anime
+%   @param ListaAnime   Lista de los animes 
+
 hallarMaximo(Lista,ListaAnime):-
     max_list(Lista,X),
     delete(Lista,X,Listica),
@@ -238,7 +326,14 @@ hallarMaximo(Lista,ListaAnime):-
 hallarMaximo([],ListaAnime):-
     in.    
     
-/* Crea una lista con todas las sumas de los animes suma = rating + popularidad*/    
+
+%! listaSuma(Lista1, Lista2, Lista3, Animes)
+%  Crea una lista con todas las sumas de los animes suma = rating + popularidad  
+%   @param Lista1   Lista inicial con los animes
+%   @param Lista2   Lista vacia donde se suman 
+%   @param Lista3   Lista que contendra los resultados de la suma
+%   @param Animes   Lista con los animes
+
 listaSuma([X|Z],Lista,_,Animes):-
     sumaAnime(X,Suma),
     append(Lista,[Suma],Listica),
@@ -249,6 +344,12 @@ listaSuma([X],Lista,Listica,Animes):-
     hallarMaximo(Listica,Animes).
 
 /* ESTAS FUNCIONES AYUDAN A ENCONTRAR EL NOMBRE DE UN ANIME CUANDO SE INGRESA POR EL USUARIO*/
+
+%! getNombre(Lista, Anime)
+%  Halla el nombre del anime ingresado por el usuario
+%   @param Lista    Lista con todas las palabras que conforman el nombre del anime    
+%   @param Anime    Resultado de la concatenacion de las palabras que conforman el nombre del anime
+
 getNombre([X|Z],Anime):-
     convert(X,String),
     string_concat(Anime,String,Listica),
@@ -261,6 +362,12 @@ getNombre([X],Anime):-
 
     ((generoAnime(Listica,_),reportarAnime(Listica));(agregarNuevoAnime(Listica))).
 
+%! getAnime(Lista1, Lista2)
+%  Halla el nombre del anime
+%   @param Lista1   Lista de palabras del usuario
+%   @param Lista2   Lista con todas las palabras que estan dentro de las comillas en la frase
+%   ingresada por el usuario
+
 getAnime([X|Z],Lista):-
     convert(X,String),
     String == "\"",
@@ -268,6 +375,11 @@ getAnime([X|Z],Lista):-
 getAnime([X|Z],Lista):-
     append(Lista,[X],Listica),
     getAnime(Z,Listica).
+
+%! findComillas(Lista,Z)
+%  Busca las comillas en la frase
+%   @param Lista    Lista de palabras ingresadas por el usuario convertidas en atomos
+%   @param Z        Resto de la lista despues de las comillas
 
 findComillas([X|Z],Z):-
     convert(X,String),
@@ -277,7 +389,13 @@ findComillas([X|Z],_):-
     findComillas(Z,_).    
 
 /********************************************************************************************************************/
+%! findRespuesta(Lista)
+%  Reglas que se encarga de reconocer las palabras importantes que ingresa el usuario por
+%  consola y dependiendo de lo que matchee le asigna una regla de respuesta
+%  @param   Lista   Palabras que entran por consola
+
 /*Mostrar Anime ordenados por rating y popularidad*/
+
 findRespuesta(Lista):-
     (buscarPalabra('ordenados',Lista,RestoLista);buscarPalabra('orden',Lista,RestoLista)),
     (buscarPalabra('rating',RestoLista,_);buscarPalabra('estrellas',RestoLista,_);
@@ -363,12 +481,20 @@ findRespuesta(_):-
 
 /***************************************************************************************************/
 
-/* Dicho genero pertenece a la lista de generos de el anime*/
+%! es_Genero(Anime, Genero)
+%  Regla que determina que dicho genero pertenece a la lista de generos de el anime
+%   @param Anime  Nombre del anime
+%   @param Genero Nombre de genero
+
 es_Genero(Anime,Genero):-
     generoAnime(Anime,Lista),
     member(Genero,Lista).
 
-/*Da la suma del rating  + popularidad de un anime*/
+%! sumaAnime(Anime,Suma)
+%  Regla que da la suma del rating  + popularidad de un anime
+%   @param Anime    Anime
+%   @param Suma     Resultado de rating+popularidad de ese anime 
+
 sumaAnime(Anime,Suma):-
     rating(Anime,Rating),
     popularidad(Anime,Popularidad),
@@ -378,6 +504,12 @@ sumaAnime(Anime,Suma):-
     
     
 /***********************************************************************/
+
+%! respuesta(N,X,Y)
+%   @param N    Identificador de respuesta
+%   @param X    Depende de la regla de respuesta
+%   @param Y    Depende de la regla de respuesta
+
 respuesta(1,_,_):-
     buscarMaximoRating(Rating),   
     findall(X,rating(X,Rating),Z),
