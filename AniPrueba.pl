@@ -61,7 +61,7 @@ preguntado("Psycho-Pass",0).
 
 in:-
     nl,
-    write('>'),
+    write('>'),nl,
     readLine(Text).
 
 %! readLine(Text)
