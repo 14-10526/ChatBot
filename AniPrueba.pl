@@ -260,7 +260,6 @@ agregarNuevoAnime(Anime):-
 %   @param Lista        Lista de palabras ingresadas por el usuario convertidas en atomos
 %   @param Popularidad  Indicador del rango de popuaridad
 
->>>>>>> rama-documentacion
 buscarPopularidad(Lista,Popularidad):-
     (buscarPalabra('muy',Lista,RestoLista),buscarPalabra('poco',RestoLista,_),Popularidad=a);
     (buscarPalabra('poco',Lista,RestoLista),Popularidad=b);
