@@ -1,3 +1,5 @@
+% Modulo que tiene la base del conocimiento y logica del programa ANIBOT
+
 :- dynamic(counter/1).
 anime(X) :- member(X,["Dragon Ball", "Naruto", "Bleach", "HunterXHunter", "Hamtaro", "Full Metal Alchemist"]).
 
