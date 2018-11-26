@@ -601,16 +601,18 @@ respuesta(4,_,Genero):-
 	write('Lo siento amig@, no tengo animes con esas caracteristicas que mostrarte'),in.      
 
 respuesta(5,Popularidad,Genero):-
-    ((Popularidad==a),findall(B,(popularidad(B,X),es_Genero(B,Genero),between(1,2,X)),Z),
-        write('Estos son los animes(s) muy poco conocido(s) que tengo: '),write(Z),in);
-    ((Popularidad==b),findall(B,(popularidad(B,X),es_Genero(B,Genero),between(3,5,X)),Z),
-        write('Estos son los animes(s) poco conocido(s) que tengo: '),write(Z),in);
-    ((Popularidad==c),findall(B,(popularidad(B,X),es_Genero(B,Genero),between(6,7,X)),Z),
-        write('Estos son los animes(s) conocido(s) que tengo: '),write(Z),in);
-    ((Popularidad==d),findall(B,(popularidad(B,X),es_Genero(B,Genero),between(8,9,X)),Z),
-        write('Estos son los animes(s) muy conocido(s) que tengo: '),write(Z),in);
-    ((Popularidad==e),findall(B,(popularidad(B,X),es_Genero(B,Genero),between(10,10,X)),Z),
-        write('Estos son los animes(s) bastante conocido(s) que tengo: '),write(Z),in).  
+    ((Popularidad==a),findall(B,(popularidad(B,X),es_Genero(B,Genero),between(1,2,X)),Z),length(Z,L),L>0,
+        write('Estos son los animes(s) muy poco conocido(s) que tengo: '),imprimirLista(Z),in);
+    ((Popularidad==b),findall(B,(popularidad(B,X),es_Genero(B,Genero),between(3,5,X)),Z),length(Z,L),L>0,
+        write('Estos son los animes(s) poco conocido(s) que tengo: '),imprimirLista(Z),in);
+    ((Popularidad==c),findall(B,(popularidad(B,X),es_Genero(B,Genero),between(6,7,X)),Z),length(Z,L),L>0,
+        write('Estos son los animes(s) conocido(s) que tengo: '),imprimirLista(Z),in);
+    ((Popularidad==d),findall(B,(popularidad(B,X),es_Genero(B,Genero),between(8,9,X)),Z),length(Z,L),L>0,
+        write('Estos son los animes(s) muy conocido(s) que tengo: '),imprimirLista(Z),in);
+    ((Popularidad==e),findall(B,(popularidad(B,X),es_Genero(B,Genero),between(10,10,X)),Z),length(Z,L),L>0,
+        write('Estos son los animes(s) bastante conocido(s) que tengo: '),imprimirLista(Z),in).  
+respuesta(5,Popularidad,Genero):-
+	write('Lo siento amig@, no tengo animes con esas caracteristicas que mostrarte'),in.
 
 respuesta(6,Popularidad,Maximo):-
     ((Popularidad==a),findall(B,(popularidad(B,X),rating(B,Maximo),between(1,2,X)),Z),length(Z,L),L>0,
