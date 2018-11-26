@@ -1,7 +1,17 @@
 :- dynamic(counter/1).
+anime(X) :- member(X,["Dragon Ball", "Naruto", "Bleach", "HunterXHunter", "Hamtaro", "Full Metal Alchemist"]).
+
+genero(X) :- member(X,["Aventura", "Shoujo", "Shounen", "Kodomo", "Seinen", "Josei", "Ficcion",
+                    "Fantasia", "Mecha", "Sobrenatural", "Magia", "Gore"]).
 
 
 :- dynamic generoAnime/2.
+generoAnime("Naruto",["Shounen","Aventura"]).
+generoAnime("Dragon Ball",["Shounen"]).
+generoAnime("Bleach",["Shounen", "Sobrenatural"]).
+generoAnime("HunterXHunter",["Seinen", "Aventura"]).
+generoAnime("Hamtaro",["Kodomo"]).
+generoAnime("Full Metal Alchemist",["Shounen", "Magia"]).
 generoAnime("Hagane no renkinjutsushi",["Accion", "Aventura"]).
 generoAnime("Clannad: After Story",["Comedia","Drama"]).
 generoAnime("Monster",["Crimen","Drama"]).
@@ -14,6 +24,12 @@ generoAnime("Nana",["Comedia","Drama"]).
 generoAnime("Psycho-Pass",["Accion","Crimen"]).
 
 :- dynamic rating/2.
+rating("Dragon Ball",3).
+rating("Naruto",1).
+rating("Bleach",4).
+rating("HunterXHunter",5).
+rating("Hamtaro",2).
+rating("Full Metal Alchemist",4).
 rating("Hagane no renkinjutsushi",5).
 rating("Clannad: After Story",5).
 rating("Monster",4).
@@ -27,6 +43,12 @@ rating("Psycho-Pass",4).
 
 
 :- dynamic popularidad/2.
+popularidad("Dragon Ball",7).
+popularidad("Naruto",5).
+popularidad("Bleach",8).
+popularidad("HunterXHunter",3).
+popularidad("Hamtaro",10).
+popularidad("Full Metal Alchemist",1).
 popularidad("Hagane no renkinjutsushi",3).
 popularidad("Clannad: After Story",5).
 popularidad("Monster",6).
@@ -40,6 +62,12 @@ popularidad("Psycho-Pass",7).
 
 
 :- dynamic preguntado/2.
+preguntado("Dragon Ball",0).
+preguntado("Naruto",0).
+preguntado("Bleach",0).
+preguntado("HunterXHunter",0).
+preguntado("Hamtaro",0).
+preguntado("Full Metal Alchemist",0).
 preguntado("Hagane no renkinjutsushi",0).
 preguntado("Clannad: After Story",0).
 preguntado("Monster",0).
@@ -307,11 +335,11 @@ imprimirLista([]).
 %   @param Maximo   Numero qu representa el maximo
 
 imprimirMaximo([X|Z],Maximo):-
-    nl,
+    %%nl,
     sumaAnime(X,Maximo),
     write(X),write(', Numero de estrellas:'),
     rating(X,Rating),write(Rating),write(', Popularidad:'),
-    popularidad(X,Popularidad),write(Popularidad),
+    popularidad(X,Popularidad),write(Popularidad),generoAnime(X,Genero),write(' Genero(s): '),write(Genero),write('\n'),
     imprimirMaximo(Z,Maximo).
 imprimirMaximo([X|Z],Maximo):- 
     imprimirMaximo(Z,Maximo).
@@ -472,11 +500,30 @@ findRespuesta(Lista):-
     convert(X,Palabra),
     respuesta(2,Palabra,_).
 
+findRespuesta(Lista):-
+	(buscarPalabra('recomiendame',Lista,RestoLista);buscarPalabra('recomendar',Lista,RestoLista)),
+	(buscarPalabra('hoteles',RestoLista,_);buscarPalabra('hotel',RestoLista,_)),
+	last(Lista,X),
+	write('Lo siento amigo, pero no se nada acerca de hoteles en '),write(X),write('. Mejor preguntame sobre animes'),
+	in.
+
+findRespuesta(Lista):-
+	(buscarPalabra('recomiendame',Lista,RestoLista);buscarPalabra('recomendar',Lista,RestoLista)),
+	buscarPalabra('lugares',RestoLista,RestoLista2),buscarPalabra('visitar',RestoLista2,_),
+	last(Lista,X),
+	write('Lo siento amigo, pero no se nada acerca de lugares para visitar en '),write(X),write('. Mejor preguntame sobre animes'),
+	in.	
+
+findRespuesta(Lista):-
+	(buscarPalabra('recomiendame',Lista,RestoLista);buscarPalabra('recomendar',Lista,RestoLista)),
+	buscarPalabra('restaurantes',RestoLista,RestoLista2),buscarPalabra('visitar',RestoLista2,_),
+	last(Lista,X),
+	write('Lo siento amigo, pero no se nada acerca de buenos lugares para comer en '),write(X),write('. Mejor preguntame sobre animes'),
+	in.		
 
 findRespuesta(Lista):-
     buscarPalabra('adios',Lista,_),
-    write('Fue un placer haber charlado contigo. Vuelve pronto, adios !'),
-    abort.
+    write('Fue un placer haber charlado contigo. Vuelve pronto, adios !').
 
 findRespuesta(_):-
     write(' Lo siento amig@, no puedo constestarte.'),
@@ -519,7 +566,7 @@ respuesta(1,_,_):-
     buscarMaximoRating(Rating),   
     findall(X,rating(X,Rating),Z),
     write(' Estos son los anime(s) con mas numero de estrellas: '),
-    write(Z),
+    imprimirLista(Z),
     nl,
     in.
 
@@ -531,8 +578,8 @@ respuestaA([],Genero):-
     write(' para mostrarte.').
 
 respuestaA(Z,_):-
-    write(' Estos anime(s) son los que tienen rating 5 estrellas : '),
-    write(Z).
+    write(' Entonces creo que estos animes te pueden interesar: '),
+    imprimirLista(Z).
 
 respuesta(2,Genero,_):-
     findall(X,es_Genero(X,Genero),Z),
@@ -543,13 +590,15 @@ respuesta(2,Genero,_):-
 respuesta(4,[X,W|_],Genero):-
     convert(W,Y),
     (Y=="Estrellas";Y=="Estrella"),
-    findall(B,(rating(B,X),es_Genero(B,Genero)),Z),    
+    findall(B,(rating(B,X),es_Genero(B,Genero)),Z),length(Z,L),L>0,    
     write('Estos son los animes que conozco del genero '),write(Genero),
-    write(' que tienen '),write(X),write(' estrellas: '),
-    write(Z),
+    write(' que tienen '),write(X),write(' estrellas: '),imprimirLista(Z),
+    %%write(Z),
     in.
 respuesta(4,[X|Z],Genero):-
-    respuesta(4,Z,Genero).  
+    respuesta(4,Z,Genero).
+respuesta(4,_,Genero):-
+	write('Lo siento amig@, no tengo animes con esas caracteristicas que mostrarte'),in.      
 
 respuesta(5,Popularidad,Genero):-
     ((Popularidad==a),findall(B,(popularidad(B,X),es_Genero(B,Genero),between(1,2,X)),Z),
@@ -578,47 +627,53 @@ respuesta(6,Popularidad,Maximo):-
     write('Disculpa,no tengo ningun anime con esas caracteristicas para mostrarte'),in.    
 
 respuesta(7,Genero,_):-
-    write(' Creo que te pueden interesar los siguientes animes: '),
-    findall(X,es_Genero(X,Genero),Animes),
+    findall(X,es_Genero(X,Genero),Animes),length(Animes,L),L>0,write(' Creo que te pueden interesar los siguientes animes: \n'),
     listaSuma(Animes,[],Listica,Animes).
+respuesta(7,Genero,_):-
+	write('Lo siento amigo, en estos momentos no tengo ningun anime de genero '),write(Genero),write(' para recomendarte.'),in.    
 
 respuesta(8,Genero,_):-
-    write(' Creo que te pueden interesar los siguientes animes, los organice por numero de estrellas como me pediste: '),
-    findall(X,(es_Genero(X,Genero),rating(X,5)),Animes5),
+    findall(X,(es_Genero(X,Genero),rating(X,5)),Animes5),length(Animes5,L5),
+    findall(X,(es_Genero(X,Genero),rating(X,4)),Animes4),length(Animes4,L4),
+    findall(X,(es_Genero(X,Genero),rating(X,3)),Animes3),length(Animes3,L3),
+    findall(X,(es_Genero(X,Genero),rating(X,2)),Animes2),length(Animes2,L2),    
+    findall(X,(es_Genero(X,Genero),rating(X,1)),Animes1),length(Animes1,L1),
+    Suma is (L5+L4+L3+L2+L1),Suma>0,write(' Creo que te pueden interesar los siguientes animes, los organice por numero de estrellas como me pediste: '),
     imprimirLista(Animes5),
-    findall(X,(es_Genero(X,Genero),rating(X,4)),Animes4),
     imprimirLista(Animes4),
-    findall(X,(es_Genero(X,Genero),rating(X,3)),Animes3),
     imprimirLista(Animes3),
-    findall(X,(es_Genero(X,Genero),rating(X,2)),Animes2),
-    imprimirLista(Animes2),    
-    findall(X,(es_Genero(X,Genero),rating(X,1)),Animes1),
+    imprimirLista(Animes2),            
     imprimirLista(Animes1),
     in.
+respuesta(8,Genero,_):-
+	write('Lo siento amigo, en estos momentos no tengo ningun anime de genero '),write(Genero),write(' para recomendarte.'),in.    
+
 
 respuesta(9,Genero,_):-
-    write(' Creo que te pueden interesar los siguientes animes, los organice por popularidad como me pediste: '),
-    findall(X,(es_Genero(X,Genero),popularidad(X,10)),Animes10),
+    findall(X,(es_Genero(X,Genero),popularidad(X,10)),Animes10),length(Animes10,L10),
+    findall(X,(es_Genero(X,Genero),popularidad(X,9)),Animes9),length(Animes9,L9),
+    findall(X,(es_Genero(X,Genero),popularidad(X,8)),Animes8),length(Animes8,L8),
+    findall(X,(es_Genero(X,Genero),popularidad(X,7)),Animes7),length(Animes7,L7),    
+    findall(X,(es_Genero(X,Genero),popularidad(X,6)),Animes6),length(Animes6,L6),
+    findall(X,(es_Genero(X,Genero),popularidad(X,5)),Animes5),length(Animes5,L5),
+    findall(X,(es_Genero(X,Genero),popularidad(X,4)),Animes4),length(Animes4,L4),
+    findall(X,(es_Genero(X,Genero),popularidad(X,3)),Animes3),length(Animes3,L3),
+    findall(X,(es_Genero(X,Genero),popularidad(X,2)),Animes2),length(Animes2,L2),   
+    findall(X,(es_Genero(X,Genero),popularidad(X,1)),Animes1),length(Animes1,L1),
+    N is (L10+L9+L8+L7+L6+L5+L4+L3+L2+L1), N>0,write(' Creo que te pueden interesar los siguientes animes, los organice por popularidad como me pediste: '),
     imprimirLista(Animes10),
-    findall(X,(es_Genero(X,Genero),popularidad(X,9)),Animes9),
     imprimirLista(Animes9),
-    findall(X,(es_Genero(X,Genero),popularidad(X,8)),Animes8),
     imprimirLista(Animes8),
-    findall(X,(es_Genero(X,Genero),popularidad(X,7)),Animes7),
-    imprimirLista(Animes7),    
-    findall(X,(es_Genero(X,Genero),popularidad(X,6)),Animes6),
+    imprimirLista(Animes7),
     imprimirLista(Animes6),
-    findall(X,(es_Genero(X,Genero),popularidad(X,5)),Animes5),
     imprimirLista(Animes5),
-    findall(X,(es_Genero(X,Genero),popularidad(X,4)),Animes4),
     imprimirLista(Animes4),
-    findall(X,(es_Genero(X,Genero),popularidad(X,3)),Animes3),
     imprimirLista(Animes3),
-    findall(X,(es_Genero(X,Genero),popularidad(X,2)),Animes2),
-    imprimirLista(Animes2),    
-    findall(X,(es_Genero(X,Genero),popularidad(X,1)),Animes1),
+    imprimirLista(Animes2),
     imprimirLista(Animes1),
     in.
+respuesta(9,Genero,_):-
+	write('Lo siento amigo, en estos momentos no tengo ningun anime de genero '),write(Genero),write(' para recomendarte.'),in.
 
 /*****************************************************************************/
 aniBot:-
